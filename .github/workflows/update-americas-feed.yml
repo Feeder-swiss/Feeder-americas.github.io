@@ -1,0 +1,37 @@
+name: Update Americas Feed
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: pip install feedparser
+    
+    - name: Run aggregator
+      run: python3 aggregate_americas_feed.py
+    
+    - name: Commit and push
+      run: |
+        git config user.email "action@github.com"
+        git config user.name "GitHub Action"
+        git add americas-feed.xml
+        git commit -m "Update Americas feed" || echo "No changes"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
